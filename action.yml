@@ -1,0 +1,17 @@
+name: Notify Discord on PR Ready for Review
+description: This action sends discord messages triggered by code review events
+branding:
+  icon: 'message-square'
+  color: 'blue'
+
+inputs:
+  github_map:
+    description: An object with github usernames as keys and discord ids as values
+    required: true
+  discord_webhook_url:
+    description: The full discord webhook url
+    required: true
+
+runs:
+  using: node20
+  main: ./discord-pr-notifications.js
