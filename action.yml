@@ -14,4 +14,4 @@ inputs:
 
 runs:
   using: node20
-  main: ./discord-pr-notifications.js
+  main: .github/workflows/discord-pr-notifications.js
