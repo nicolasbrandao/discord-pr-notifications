@@ -1,33 +1,35 @@
-const {
-  INPUT_DISCORD_WEBHOOK_URL,
-  INPUT_USERNAME_ID_MAP,
-  PR_TITLE,
-  PR_URL,
-  PR_AUTHOR,
-  PR_REVIEWER,
-  PR_APPROVER,
-  PR_REVIEWERS,
-  PR_NUMBER,
-  GITHUB_EVENT_TYPE,
-  REVIEW_STATE,
-  PR_MERGED,
-  PR_IS_DRAFT,
-  PR_BASE_BRANCH,
-  PR_HEAD_BRANCH,
-} = process.env;
-
-const prMerged = PR_MERGED === 'true';
-
-const parseDiscordMap = () => {
-  try {
-    return JSON.parse(INPUT_USERNAME_ID_MAP);
-  } catch (error) {
-    console.error('Error parsing USERNAME_ID_MAP:', error);
-    return {};
-  }
-};
+const core = require('@actions/core');
+const github = require('@actions/github');
 
 async function main() {
+  const discordWebhookUrl = core.getInput('discord_webhook_url');
+  const usernameIdMapInput = core.getInput('username_id_map');
+
+  const { context } = github;
+  const { payload, eventName } = context;
+
+  if (!payload.pull_request) {
+    console.log('This event is not a pull request event. Exiting.');
+    process.exit(0);
+  }
+
+  const pr = payload.pull_request;
+  const PR_TITLE = pr.title;
+  const PR_URL = pr.html_url;
+  const PR_AUTHOR = pr.user.login;
+  const PR_NUMBER = pr.number;
+  const PR_IS_DRAFT = pr.draft;
+  const PR_BASE_BRANCH = pr.base.ref;
+  const PR_HEAD_BRANCH = pr.head.ref;
+  const PR_MERGED = pr.merged;
+  const PR_REVIEWERS = pr.requested_reviewers.map((reviewer) => reviewer.login);
+  const PR_REVIEWER = payload.requested_reviewer?.login || '';
+  const PR_APPROVER = payload.review?.user?.login || '';
+  const REVIEW_STATE = payload.review?.state || '';
+  const GITHUB_EVENT_TYPE = eventName;
+
+  const prMerged = PR_MERGED === 'true';
+
   const isDraft = PR_IS_DRAFT === 'true';
   const noReviewer = GITHUB_EVENT_TYPE === 'review_requested' && !PR_REVIEWER;
   if (isDraft || noReviewer) {
@@ -36,7 +38,13 @@ async function main() {
     return;
   }
 
-  const discordUsersMap = parseDiscordMap();
+  let discordUsersMap = {};
+  try {
+    discordUsersMap = JSON.parse(usernameIdMapInput);
+  } catch (error) {
+    console.error('Error parsing USERNAME_ID_MAP:', error);
+    process.exit(1);
+  }
 
   const parsePrReviewers = (reviewers) => {
     try {
@@ -110,7 +118,7 @@ async function main() {
     username: 'GitHub PR',
     embeds: [],
   };
-  const parsedWebhookUrl = new URL(INPUT_DISCORD_WEBHOOK_URL ?? '');
+  const parsedWebhookUrl = new URL(discordWebhookUrl ?? '');
   await fetch(parsedWebhookUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
