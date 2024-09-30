@@ -1,6 +1,6 @@
 const {
   INPUT_DISCORD_WEBHOOK_URL,
-  INPUT_GITHUB_DISCORD_MAP,
+  INPUT_USERNAME_ID_MAP,
   PR_TITLE,
   PR_URL,
   PR_AUTHOR,
@@ -20,9 +20,9 @@ const prMerged = PR_MERGED === 'true';
 
 const parseDiscordMap = () => {
   try {
-    return JSON.parse(INPUT_GITHUB_DISCORD_MAP);
+    return JSON.parse(INPUT_USERNAME_ID_MAP);
   } catch (error) {
-    console.error('Error parsing GITHUB_DISCORD_MAP:', error);
+    console.error('Error parsing USERNAME_ID_MAP:', error);
     return {};
   }
 };

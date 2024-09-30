@@ -1,0 +1,21 @@
+name: Test Action
+on:
+    pull_request:
+      types: [ready_for_review, review_requested, closed, reopened]
+    pull_request_review:
+      types: [submitted]
+
+jobs:
+  notify-discord:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20 
+      - uses: ./
+      - name: Send notification to Discord
+        env:
+          DISCORD_WEBHOOK_URL: "${{ secrets.DISCORD_WEBHOOK_URL }}"
+          GITHUB_MAP: "${{ secrets.USERNAME_ID_MAP }}"

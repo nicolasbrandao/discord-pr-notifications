@@ -5,7 +5,7 @@ branding:
   color: 'blue'
 
 inputs:
-  github_map:
+  username_id_map:
     description: An object with github usernames as keys and discord ids as values
     required: true
   discord_webhook_url:
